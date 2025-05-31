@@ -11,8 +11,9 @@ from player import Player
 from pipe import Pipe
 
 
-SCREEN_DIMENSIONS = (1280, 720)
-SCREEN = pygame.display.set_mode((SCREEN_DIMENSIONS[0], SCREEN_DIMENSIONS[1]))
+SCREEN_DIMENSIONS = (620, 820)
+screen = pygame.display.set_mode((SCREEN_DIMENSIONS[0], SCREEN_DIMENSIONS[1]))
+clock = pygame.time.Clock()
 
 CHUNK = 1024 # samples per frame
 FORMAT = pyaudio.paInt16  # audio format (16-bit PCM)
@@ -28,11 +29,12 @@ PERIOD_SIZE_IN_FRAME = HOP_SIZE
 
 DARK_GREEN = (38, 118, 32)
 PIPE_NUM = 10
-PIPE_HORIZ_DISTANCE = 150
-PIPE_VERT_DISTANCE = 50
-GRAVITY_CONSTANT = 3.5
-MIC_SENSITIVITY = 80
+PIPE_HORIZ_DISTANCE = 200
+PIPE_VERT_DISTANCE = 150
+GRAVITY_ACCEL = 6.5
+MIC_SENSITIVITY = 200
 
+background_image = pygame.image.load("./images/flappy-bird-background.jpg").convert()
 pipes = []
 
 
@@ -56,12 +58,11 @@ def generatePipes():
 
 def drawAllPipes():
     for pipe in pipes:
-        pipe.draw(SCREEN)
+        pipe.draw(screen)
 
 class Game:
     def __init__(self) -> None:
         self.stopLoop = False
-        generatePipes()
 
         self.player = Player()
 
@@ -76,9 +77,15 @@ class Game:
 
     def onStart(self):
         pygame.init()
+        pygame.display.set_caption('PhoneBird')
+        generatePipes()
+
         
     def onLoop(self):
-        SCREEN.fill((0, 0, 0))
+        deltaTime = clock.tick(60) / 50
+
+        screen.fill((0, 0, 0))
+        screen.blit(background_image, (0, 0))
         drawAllPipes()
 
         
@@ -88,10 +95,16 @@ class Game:
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
         # print(str(pitch) + "\n" + str(volume) + "\n")
-        pygame.display.flip()
 
-        self.player.move(0, GRAVITY_CONSTANT - volume*MIC_SENSITIVITY)
-        self.player.draw(SCREEN)
+ 
+        lift = volume * MIC_SENSITIVITY
+        
+        self.player.velocity.y += GRAVITY_ACCEL * deltaTime
+        self.player.velocity.y -= lift * deltaTime
+        self.player.velocity.y = max(min(self.player.velocity.y, 15), -15)
+        
+        self.player.position.y += self.player.velocity.y * deltaTime
+        self.player.draw(screen)
 
         processEvents()
         processMicrophone()
