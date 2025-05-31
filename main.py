@@ -41,7 +41,7 @@ class Game:
         pygame.draw.rect(self.screen, DARK_GREEN, (550,350,40,400))
         pygame.draw.rect(self.screen, DARK_GREEN, (750,0,40,150))
         pygame.draw.rect(self.screen, DARK_GREEN, (750,450,40,400))
-        
+        pygame.draw.rect(self.screen, DARK_GREEN, (950,450,40,400))
         pygame.display.flip()
         processEvents()
         processMicrophone()
