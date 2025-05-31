@@ -1,15 +1,20 @@
 # third party libs
-import pygame
+import aubio
+import numpy as num
 import pyaudio
+import pygame
 
 # our libs
 from player import Player
 
 
-CHUNK = 1024 # samples per frame
-FORMAT = pyaudio.paInt16  # audio format (16-bit PCM)
-CHANNELS = 1 # one channel
-RATE = 44100 # samples per second
+BUFFER_SIZE = 2048
+CHANNELS = 1
+FORMAT = pyaudio.paFloat32
+METHOD = "default"
+SAMPLE_RATE = 44100
+HOP_SIZE = BUFFER_SIZE//2
+PERIOD_SIZE_IN_FRAME = HOP_SIZE
 
 DARK_GREEN = (38, 118, 32)
 
@@ -20,18 +25,31 @@ class Game:
         self.rectangle = pygame.Rect(30,60,90,60)
 
         self.player = Player()
-        p = pyaudio.PyAudio()
-        self.stream = p.open(format=FORMAT,
-                        channels=CHANNELS,
-                        rate=RATE,
-                        input=True,
-                        frames_per_buffer=CHUNK)
+
+        pA = pyaudio.PyAudio()
+        self.mic = pA.open(format=FORMAT, channels=CHANNELS,
+            rate=SAMPLE_RATE, input=True,
+            frames_per_buffer=PERIOD_SIZE_IN_FRAME)
+        self.pDetection = aubio.pitch(METHOD, BUFFER_SIZE,
+            HOP_SIZE, SAMPLE_RATE)
+        self.pDetection.set_unit("Hz")
+        self.pDetection.set_silence(-40)
 
     def onStart(self):
         pygame.init()
         
     
     def onLoop(self):
+        
+        raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME)
+        samples = num.fromstring(raw_audio,
+            dtype=aubio.float_type)
+        pitch = self.pDetection(samples)[0]
+        volume = num.sum(samples**2)/len(samples)
+        volume = "{:6f}".format(volume)
+        print(str(pitch) + "\n" + str(volume) + "\n")
+
+
         pygame.draw.rect(self.screen, DARK_GREEN, (150,0,40,250))
         #self.rectangle.move(90,120)
         pygame.draw.rect(self.screen, DARK_GREEN, (150,450,40,400))
