@@ -32,8 +32,11 @@ PIPE_NUM = 10
 PIPE_HORIZ_DISTANCE = 200
 PIPE_VERT_DISTANCE = 200
 GRAVITY_ACCEL = 6.5
-MIC_SENSITIVITY = 200
 PIPE_SPEED = -0.01
+
+# IMPORTANT CONSTANTS
+MIC_SENSITIVITY = 200
+MIC_THRESHOLD = 0.01
 
 background_image = pygame.image.load("./images/flappy-bird-background.jpg").convert()
 pipes = []
@@ -111,7 +114,7 @@ class Game:
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
         print(str(pitch) + "\n" + str(volume) + "\n")
-        if volume<=0.8:
+        if volume<=MIC_THRESHOLD:
             volume=0
  
         lift = volume * MIC_SENSITIVITY
