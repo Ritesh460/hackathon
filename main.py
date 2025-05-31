@@ -118,11 +118,10 @@ class Game:
         
         raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME, exception_on_overflow=False)
         samples = num.fromstring(raw_audio, dtype=aubio.float_type)
-        pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
-        print(str(pitch) + "\n" + str(volume) + "\n")
-        if volume<=0.8: # User changed this from 0.1
+        #print(str(pitch) + "\n" + str(volume) + "\n")
+        if volume<=0.9: # User changed this from 0.1
             volume=0
  
         lift = volume * MIC_SENSITIVITY
