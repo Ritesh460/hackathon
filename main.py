@@ -13,6 +13,7 @@ class Game:
         self.screen = pygame.display.set_mode((1280,720))
         self.stopLoop = False
         self.rectangle = pygame.Rect(30,60,90,60)
+        self.color = (38,118,32)
         p = pyaudio.PyAudio()
         self.stream = p.open(format=FORMAT,
                         channels=CHANNELS,
@@ -25,9 +26,16 @@ class Game:
         
     
     def onLoop(self):
-        pygame.draw.rect(self.screen, (0,0,255), (5,10,20,40))
+        pygame.draw.rect(self.screen, self.color, (150,0,40,250))
         #self.rectangle.move(90,120)
-        pygame.draw.rect(self.screen, (0,255,255), (200,300,5,10))
+        pygame.draw.rect(self.screen, self.color, (150,450,40,400))
+        pygame.draw.rect(self.screen, self.color, (350,0,40,200))
+        pygame.draw.rect(self.screen, self.color, (350,400,40,350))
+        pygame.draw.rect(self.screen, self.color, (550,0,40,150))
+        pygame.draw.rect(self.screen, self.color, (550,350,40,400))
+        pygame.draw.rect(self.screen, self.color, (750,0,40,150))
+        pygame.draw.rect(self.screen, self.color, (750,450,40,400))
+        
         pygame.display.flip()
         processEvents()
         processMicrophone()
