@@ -4,7 +4,7 @@ import pygame
 import aubio
 import numpy as num
 import pyaudio
-import pygame
+import math
 
 # our libs
 from player import Player
@@ -30,13 +30,14 @@ PERIOD_SIZE_IN_FRAME = HOP_SIZE
 DARK_GREEN = (38, 118, 32)
 PIPE_NUM = 10
 PIPE_HORIZ_DISTANCE = 200
-PIPE_VERT_DISTANCE = 150
+PIPE_VERT_DISTANCE = 200
 GRAVITY_ACCEL = 6.5
-MIC_SENSITIVITY = 200
+MIC_SENSITIVITY = 50
+PIPE_SPEED = -0.01
 
 background_image = pygame.image.load("./images/flappy-bird-background.jpg").convert()
 pipes = []
-
+offset = 0
 
 def generatePipes():
     pipes.clear()
@@ -80,22 +81,35 @@ class Game:
         pygame.display.set_caption('PhoneBird')
         generatePipes()
 
-        
+    def collision_detection(self,playerx,playery,pipes):
+        closest_x = max(pipes.rectangle.left, pipes.rectangle.right)
+        closest_y = max(pipes.rectangle.top,  pipes.rectangle.bottom)
+
+        distance_x = playerx - closest_x
+        distance_y = playery - closest_y
+
+        distance = math.hypot(distance_x,distance_y)
+
+        return distance <= playerx and distance <= playery
     def onLoop(self):
+        global offset
+        off = offset
         deltaTime = clock.tick(60) / 50
 
         screen.fill((0, 0, 0))
         screen.blit(background_image, (0, 0))
+        for pipe in pipes:
+            pipe.move(off)
         drawAllPipes()
-
+        offset += PIPE_SPEED * deltaTime
         
         raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME, exception_on_overflow=False)
         samples = num.fromstring(raw_audio, dtype=aubio.float_type)
         pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
-        # print(str(pitch) + "\n" + str(volume) + "\n")
-        if volume<=0.7:
+        print(str(pitch) + "\n" + str(volume) + "\n")
+        if volume<=0.8:
             volume=0
  
         lift = volume * MIC_SENSITIVITY
@@ -106,7 +120,11 @@ class Game:
         
         self.player.position.y += self.player.velocity.y * deltaTime
         self.player.draw(screen)
-
+        for pipe in pipes:
+            if self.collision_detection(self.player.position.x, self.player.position.y, pipe):
+                pass
+                #self.stopLoop = True
+                #pygame.quit()
         processEvents()
         processMicrophone()
 

@@ -3,9 +3,9 @@ import pygame
 
 class Player:
     def __init__(self):
-        self.position = pygame.Vector2(60, 350)
+        self.position = pygame.Vector2(80, 350)
         self.velocity = pygame.Vector2(0, 0)
-        self.color = pygame.Color(255, 255, 255)
+        self.color = pygame.Color(0, 255, 255)
 
     def move(self, posx, posy):
         self.position = pygame.Vector2(posx + self.position.x, posy + self.position.y)

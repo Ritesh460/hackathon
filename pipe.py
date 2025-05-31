@@ -9,9 +9,9 @@ class Pipe:
         self.color = color
         self.rectangle = pygame.Rect(absPosX, absPosY, PIPE_WIDTH, height)
 
-    def move(self, posx, posy):
-        self.position = pygame.Vector2(self.rectangle.x + posx, self.rectangle.y + posy)
-    
+    def move(self, posx, posy = 0):
+        self.rectangle.x = self.rectangle.x + posx
+        self.rectangle.y = self.rectangle.y + posy
 
     def draw(self, screen: pygame.Surface):
         pygame.draw.rect(screen, self.color, self.rectangle)
