@@ -4,7 +4,6 @@ import pygame
 import aubio
 import numpy as num
 import pyaudio
-import pygame
 
 # our libs
 from player import Player
@@ -29,9 +28,9 @@ PERIOD_SIZE_IN_FRAME = HOP_SIZE
 DARK_GREEN = (38, 118, 32)
 PIPE_NUM = 10
 PIPE_HORIZ_DISTANCE = 150
-PIPE_VERT_DISTANCE = 50
+PIPE_VERT_DISTANCE = 150
 GRAVITY_CONSTANT = 3.5
-MIC_SENSITIVITY = 80
+MIC_SENSITIVITY =5
 
 pipes = []
 
@@ -86,11 +85,12 @@ class Game:
         samples = num.fromstring(raw_audio, dtype=aubio.float_type)
         pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
+        if volume<=0.7:
+            volume=0
         # volume = "{:6f}".format(volume)
-        # print(str(pitch) + "\n" + str(volume) + "\n")
-        pygame.display.flip()
+        print(str(pitch) + "\n" + str(volume) + "\n")
 
-        self.player.move(0, GRAVITY_CONSTANT - volume*MIC_SENSITIVITY)
+        self.player.move(0, GRAVITY_CONSTANT - (volume)*MIC_SENSITIVITY)
         self.player.draw(SCREEN)
 
         processEvents()
