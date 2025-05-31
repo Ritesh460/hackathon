@@ -64,7 +64,8 @@ def drawAllPipes():
 class Game:
     def __init__(self) -> None:
         self.stopLoop = False
-
+        self.font = None # Will be initialized in onStart
+        self.small_font = None # Will be initialized in onStart
         self.player = Player()
 
         pA = pyaudio.PyAudio()
@@ -79,7 +80,17 @@ class Game:
     def onStart(self):
         pygame.init()
         pygame.display.set_caption('PhoneBird')
+        self.font = pygame.font.Font(None, 74) # Initialize font
+        self.small_font = pygame.font.Font(None, 36) # For "Play Again"
         generatePipes()
+
+    def reset_game(self):
+        global offset
+        self.player.setPosition(80, 350) # Reset player position
+        self.player.velocity = pygame.Vector2(0, 0) # Reset player velocity
+        generatePipes() # Regenerate pipes
+        offset = 0 # Reset pipe offset
+        self.stopLoop = False # Allow the game loop to run again
 
     def collision_detection(self, playerx, playery, radius, pipe: Pipe):
         rect = pipe.rectangle
@@ -100,8 +111,8 @@ class Game:
 
         screen.fill((0, 0, 0))
         screen.blit(background_image, (0, 0))
-        for pipe in pipes:
-            pipe.move(off)
+        for pipe_obj in pipes: # Renamed pipe to pipe_obj to avoid conflict with the imported Pipe class
+            pipe_obj.move(off) # Assuming pipe_obj has a move method
         drawAllPipes()
         offset += PIPE_SPEED * deltaTime
         
@@ -111,7 +122,7 @@ class Game:
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
         print(str(pitch) + "\n" + str(volume) + "\n")
-        if volume<=0.8:
+        if volume<=0.8: # User changed this from 0.1
             volume=0
  
         lift = volume * MIC_SENSITIVITY
@@ -122,15 +133,57 @@ class Game:
         
         self.player.position.y += self.player.velocity.y * deltaTime
         self.player.draw(screen)
-        for pipe in pipes:
-            if self.collision_detection(self.player.position.x, self.player.position.y, 30, pipe):
+
+        # Player-Pipe collision
+        for pipe_instance in pipes: # Changed back to pipe_instance for clarity
+            if self.collision_detection(self.player.position.x, self.player.position.y, 30, pipe_instance): # 30 is player radius
+                self.stopLoop = True
+                break # Exit loop once a collision is detected
+        
+        # Player-Screen bounds collision
+        if not self.stopLoop: # Only check if no pipe collision yet
+            if self.player.position.y - 30 < 0 or self.player.position.y + 30 > SCREEN_DIMENSIONS[1]: # 30 is player radius
                 self.stopLoop = True
 
+        if self.stopLoop: # If collision detected
+            self.show_game_over_screen() # Show game over screen
+            # The game loop in main() will handle restarting or quitting based on show_game_over_screen's outcome
+            return # Return to main loop to handle stopLoop state
 
-        processEvents()
-
+        processEvents() # processEvents currently only handles QUIT during gameplay
+  
         pygame.display.flip()
         return
+
+    def show_game_over_screen(self):
+        screen.fill((0,0,0)) # Black background for game over
+        game_over_text = self.font.render("Game Over", True, (255, 255, 255))
+        play_again_text = self.small_font.render("Press R to Play Again", True, (255, 255, 255))
+        quit_text = self.small_font.render("Press Q to Quit", True, (255,255,255))
+
+        game_over_rect = game_over_text.get_rect(center=(SCREEN_DIMENSIONS[0]//2, SCREEN_DIMENSIONS[1]//2 - 50))
+        play_again_rect = play_again_text.get_rect(center=(SCREEN_DIMENSIONS[0]//2, SCREEN_DIMENSIONS[1]//2 + 20))
+        quit_rect = quit_text.get_rect(center=(SCREEN_DIMENSIONS[0]//2, SCREEN_DIMENSIONS[1]//2 + 60))
+
+        screen.blit(game_over_text, game_over_rect)
+        screen.blit(play_again_text, play_again_rect)
+        screen.blit(quit_text, quit_rect)
+        pygame.display.flip()
+
+        waiting_for_input = True
+        while waiting_for_input:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    raise SystemExit # Exit the whole application
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        self.reset_game() # This sets self.stopLoop = False
+                        waiting_for_input = False # Exit this loop to restart the game in the main loop
+                    if event.key == pygame.K_q:
+                        pygame.quit()
+                        raise SystemExit # Exit the whole application
+            clock.tick(15) # Keep the loop from running too fast
     
     def onEnd(self):
         pygame.quit()
@@ -145,8 +198,26 @@ def processEvents():
 def main():
     game = Game()
     game.onStart()
-    while(game.stopLoop == False):
-        game.onLoop();
+    running = True # Control the main game loop
+    while running:
+        if not game.stopLoop:
+            game.onLoop()
+        else:
+            # When stopLoop is true, it means a game over condition was met.
+            # onLoop would have called show_game_over_screen.
+            # If the player chose to restart, reset_game() was called, setting game.stopLoop to False.
+            # If the player chose to quit, SystemExit would have been raised.
+            # If game.stopLoop is still True here, it means show_game_over_screen was somehow bypassed or an error occurred.
+            # However, with the current logic, show_game_over_screen handles its own loop and will either reset stopLoop or quit.
+            # If reset_game was called, stopLoop becomes false, and the next iteration of this outer loop will call onLoop().
+            pass # Explicitly do nothing, waiting for stopLoop to change or program to exit.
+
+        # Check for quit event in the main loop as a fallback,
+        # although onLoop -> processEvents and show_game_over_screen also handle QUIT.
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+    
     game.onEnd()
 
 if __name__ == "__main__":
