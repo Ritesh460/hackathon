@@ -95,7 +95,8 @@ class Game:
         volume = num.sum(samples**2)/len(samples)
         # volume = "{:6f}".format(volume)
         # print(str(pitch) + "\n" + str(volume) + "\n")
-
+        if volume<=0.7:
+            volume=0
  
         lift = volume * MIC_SENSITIVITY
         
