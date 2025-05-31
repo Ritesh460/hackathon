@@ -44,8 +44,6 @@ class Game:
         pygame.draw.rect(self.screen, DARK_GREEN, (950,450,40,400))
         pygame.display.flip()
         self.player.draw(self.screen)
-
-        self.player.move(0, -5)
         processEvents()
         processMicrophone()
         return
