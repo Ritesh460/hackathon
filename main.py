@@ -10,22 +10,29 @@ RATE = 44100 # samples per second
 
 class Game:
     def __init__(self) -> None:
+        self.screen = pygame.display.set_mode((1280,720))
         self.stopLoop = False
-
-    def onStart(self):
-        pygame.init()
-        screen = pygame.display.set_mode((1280,720))
+        self.rectangle = pygame.Rect(30,60,90,60)
         p = pyaudio.PyAudio()
-        stream = p.open(format=FORMAT,
+        self.stream = p.open(format=FORMAT,
                         channels=CHANNELS,
                         rate=RATE,
                         input=True,
                         frames_per_buffer=CHUNK)
+
+    def onStart(self):
+        pygame.init()
+        
     
     def onLoop(self):
+        pygame.draw.rect(self.screen, (0,0,255), (5,10,20,40))
+        #self.rectangle.move(90,120)
+        pygame.draw.rect(self.screen, (0,255,255), (200,300,5,10))
+        pygame.display.flip()
         processEvents()
         processMicrophone()
         return
+    
     
     def onEnd(self):
         return
