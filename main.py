@@ -3,7 +3,6 @@ import aubio
 import numpy as num
 import pyaudio
 import pygame
-import sys
 
 # our libs
 from player import Player
