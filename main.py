@@ -44,7 +44,7 @@ class Game:
         raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME)
         samples = num.fromstring(raw_audio,
             dtype=aubio.float_type)
-        pitch = self.pDetection(samples)[0]
+        self.pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
         volume = "{:6f}".format(volume)
         print(str(pitch) + "\n" + str(volume) + "\n")
