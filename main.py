@@ -30,7 +30,8 @@ DARK_GREEN = (38, 118, 32)
 PIPE_NUM = 10
 PIPE_HORIZ_DISTANCE = 150
 PIPE_VERT_DISTANCE = 50
-GRAVITY_CONSTANT = 6
+GRAVITY_CONSTANT = 3.5
+MIC_SENSITIVITY = 80
 
 pipes = []
 
@@ -77,18 +78,20 @@ class Game:
         pygame.init()
         
     def onLoop(self):
+        SCREEN.fill((0, 0, 0))
         drawAllPipes()
-        self.player.draw(SCREEN)
-        self.player.move(0, -GRAVITY_CONSTANT)
 
         
-        raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME)
+        raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME, exception_on_overflow=False)
         samples = num.fromstring(raw_audio, dtype=aubio.float_type)
         pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
-        volume = "{:6f}".format(volume)
-        print(str(pitch) + "\n" + str(volume) + "\n")
+        # volume = "{:6f}".format(volume)
+        # print(str(pitch) + "\n" + str(volume) + "\n")
         pygame.display.flip()
+
+        self.player.move(0, GRAVITY_CONSTANT - volume*MIC_SENSITIVITY)
+        self.player.draw(SCREEN)
 
         processEvents()
         processMicrophone()
