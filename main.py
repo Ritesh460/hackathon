@@ -32,7 +32,7 @@ PIPE_NUM = 10
 PIPE_HORIZ_DISTANCE = 200
 PIPE_VERT_DISTANCE = 200
 GRAVITY_ACCEL = 6.5
-MIC_SENSITIVITY = 50
+MIC_SENSITIVITY = 200
 PIPE_SPEED = -0.01
 
 background_image = pygame.image.load("./images/flappy-bird-background.jpg").convert()
@@ -81,16 +81,18 @@ class Game:
         pygame.display.set_caption('PhoneBird')
         generatePipes()
 
-    def collision_detection(self,playerx,playery,pipes):
-        closest_x = max(pipes.rectangle.left, pipes.rectangle.right)
-        closest_y = max(pipes.rectangle.top,  pipes.rectangle.bottom)
-
+    def collision_detection(self, playerx, playery, radius, pipe: Pipe):
+        rect = pipe.rectangle
+        
+        closest_x = max(rect.left, min(playerx, rect.right))
+        closest_y = max(rect.top,  min(playery, rect.bottom))
+    
         distance_x = playerx - closest_x
         distance_y = playery - closest_y
+        distance_squared = distance_x**2 + distance_y**2
+    
+        return distance_squared <= radius**2
 
-        distance = math.hypot(distance_x,distance_y)
-
-        return distance <= playerx and distance <= playery
     def onLoop(self):
         global offset
         off = offset
@@ -121,12 +123,11 @@ class Game:
         self.player.position.y += self.player.velocity.y * deltaTime
         self.player.draw(screen)
         for pipe in pipes:
-            if self.collision_detection(self.player.position.x, self.player.position.y, pipe):
-                pass
-                #self.stopLoop = True
-                #pygame.quit()
+            if self.collision_detection(self.player.position.x, self.player.position.y, 30, pipe):
+                self.stopLoop = True
+
+
         processEvents()
-        processMicrophone()
 
         pygame.display.flip()
         return
@@ -139,9 +140,6 @@ def processEvents():
         if event.type == pygame.QUIT:
             pygame.quit()
             raise SystemExit
-
-def processMicrophone():
-    return
 
 
 def main():
