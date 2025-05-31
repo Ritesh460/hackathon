@@ -1,11 +1,8 @@
 # third party libs
-<<<<<<< HEAD
 from random import randint
 import pygame
-=======
 import aubio
 import numpy as num
->>>>>>> 39441ca9119c98e3de387e8fa90ef743bea3a77f
 import pyaudio
 import pygame
 
@@ -14,7 +11,6 @@ from player import Player
 from pipe import Pipe
 
 
-<<<<<<< HEAD
 SCREEN_DIMENSIONS = (1280, 720)
 SCREEN = pygame.display.set_mode((SCREEN_DIMENSIONS[0], SCREEN_DIMENSIONS[1]))
 
@@ -22,7 +18,6 @@ CHUNK = 1024 # samples per frame
 FORMAT = pyaudio.paInt16  # audio format (16-bit PCM)
 CHANNELS = 1 # one channel
 RATE = 44100 # samples per second
-=======
 BUFFER_SIZE = 2048
 CHANNELS = 1
 FORMAT = pyaudio.paFloat32
@@ -30,7 +25,6 @@ METHOD = "default"
 SAMPLE_RATE = 44100
 HOP_SIZE = BUFFER_SIZE//2
 PERIOD_SIZE_IN_FRAME = HOP_SIZE
->>>>>>> 39441ca9119c98e3de387e8fa90ef743bea3a77f
 
 DARK_GREEN = (38, 118, 32)
 PIPE_NUM = 10
@@ -83,23 +77,19 @@ class Game:
         pygame.init()
         
     def onLoop(self):
-<<<<<<< HEAD
         drawAllPipes()
         self.player.draw(SCREEN)
         self.player.move(0, -GRAVITY_CONSTANT)
 
-=======
         
         raw_audio = self.mic.read(PERIOD_SIZE_IN_FRAME)
-        samples = num.fromstring(raw_audio,
-            dtype=aubio.float_type)
+        samples = num.fromstring(raw_audio, dtype=aubio.float_type)
         pitch = self.pDetection(samples)[0]
         volume = num.sum(samples**2)/len(samples)
         volume = "{:6f}".format(volume)
         print(str(pitch) + "\n" + str(volume) + "\n")
         pygame.display.flip()
-        self.player.draw(self.screen)
->>>>>>> 39441ca9119c98e3de387e8fa90ef743bea3a77f
+
         processEvents()
         processMicrophone()
 
